@@ -1,0 +1,64 @@
+#spring.jpa.hibernate.ddl-auto=update
+# Datasource
+#spring.datasource.url=jdbc:h2:file:~/test
+#spring.datasource.username=sa
+#spring.datasource.password=
+#spring.datasource.driver-class-name=org.h2.Driver
+
+# spring.datasource.url=jdbc:oracle:thin:@172.16.21.71:1521:BIODB
+#spring.datasource.username=compas
+#spring.datasource.password=oracle
+#spring.jpa.hibernate.ddl-auto = update
+#spring.datasource.url=jdbc:oracle:thin:@197.220.114.46:7555:ORCL
+#spring.datasource.username=BIOKCB
+#spring.datasource.password=Imflp2018
+# local oracle database
+spring.datasource.url=jdbc:oracle:thin:@localhost:1521:BIODB
+spring.datasource.username=ENC(6jvZY8heixl8fcjhYaBWDGDOKCYLjvPpqVQ1M7O50ZDxX8GHI8DwYla7mLrDrJhd)
+spring.datasource.password= ENC(yWhP5kSckQwyc3YRlMYGlKmjjRvEzXGUw564XCdfD7ruylZcB4bpxB6m8NWP5ARY)
+spring.jpa.hibernate.ddl-auto = update
+spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
+
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n
+logging.level.org.hibernate.SQL=debug
+spring.jpa.database-platform=org.hibernate.dialect.Oracle12cDialect
+spring.jpa.hibernate.naming.implicit-strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+# ==================================================
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username= ENC(v+p0J98T29UM16PUF2n/0tqW2ouI9XYuHrMjY5At4R0VTErPUjEltxzLmLTW8Bz+c1tFN3IAwp/gtJPCbxmtVA==)
+spring.mail.password= ENC(8CdxoY0po8ZATn93n/j6DDc9uF5kHb13u0Qnr49scsPu392PRqLAQ0tlnVi0WsdR)
+# spring.mail.host=smtp.gmail.com
+# spring.mail.port=587
+# ==================================================
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=5000
+spring.mail.properties.mail.smtp.writetimeout=5000
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+
+#spring.mail.properties.mail.smtp.auth=true
+#spring.mail.properties.mail.smtp.starttls.enable=true
+#spring.mail.properties.mail.smtp.starttls.required=true
+server.port=9000
+#logging.path = ~/tomcat-install-dir/logs
+server.servlet.context-path=/compas
+tserver=http://172.17.74.91:9095/kcb/api/customer/
+cobanking=http://172.17.74.91:8055/api
+cobankingAuthName=ENC(sogfwDD0UKvpD94vWtX6bt19kfm0vpeRUu8Ido2xDNudupp2dMMSXM1/HfnXMryaojk1Ni+7uFz3SuCpUcySZw==)
+cobankingAuthPass=ENC(r4EigDzuhj/JeEgeWej7elqDFtTYXM5Vlz1kF4AUSVJxBf7bSmLUM83uoF4oFIQB/277sWeyJ1pzxl9EDOwWfw==)
+abis=http://localhost:8080/AbisClient
+secugen=http://localhost:8449
+# secugen=ENC(kt8uXphEq8UYyx+bbS4tGvilMdcr2jfw0oZk8SOq1b4=)
+greenbit=http://localhost:8444/getImage/
+#rportpath=~/tomcat-install-dir/bin/reports/
+rportpath=D:\\compas reports\\reports
+
+sessionTimeout = 120
+sessionIdle = 120
+
+jwt = Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTY1MDQyMTk3NH0.cOjz0NqdSq0v8LF9pzlQHjzkWfv8R0JDupAaBLeInFa_Jf1aVhao8U4UrzuTG4IvFrHo5vj6ad0ni6UYGsKBsg
+
+server.servlet.session.cookie.secure=true

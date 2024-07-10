@@ -1,0 +1,16 @@
+{
+    "message": "Success",
+    "payload": {
+        "id": "KE15891",
+        "loginStatus": "ACTIVE",
+        "deptCode": null,
+        "recordStatus": null,
+        "contactEmail": "telleruser@kcb.co.ke",
+        "userName": "JETHRO B USER",
+        "signOnName": "JETHROB",
+        "departmentCode": "4001",
+        "companyCode": null,
+        "cif": "1290238954"
+    },
+    "requestStatus": true
+}
