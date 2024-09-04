@@ -9,8 +9,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.UUID;
-
 import javax.net.ssl.HttpsURLConnection;
 import com.compulynx.compas.models.Token;
 import com.compulynx.compas.models.TokenResponse;
@@ -43,10 +41,23 @@ public class Auth2T24TokenService {
     public String getAccessToken(Environment env) throws IOException {
     	
     	logger.debug("Starting getAccessToken");
-        if (tokenRepository == null) {
-            logger.error("TokenRepository is null");
-           throw new IllegalStateException("TokenRepository is not initialized");
-        }
+    	
+//        if (tokenRepository == null) {
+//            logger.error("TokenRepository is null");
+//           throw new IllegalStateException("TokenRepository is not initialized");
+//        }
+        
+        
+//        Token existingToken = tokenRepository.findLatestToken();
+//        if (existingToken != null) {
+//            LocalDateTime tokenExpiryTime = existingToken.getCreatedAt().plusSeconds(existingToken.getExpiresIn());
+//            if (LocalDateTime.now().isBefore(tokenExpiryTime)) {
+//                logger.info("Reusing existing valid token");
+//                return existingToken.getAccessToken();
+//            } else {
+//                logger.info("Existing token is expired");
+//            }
+//        }
         int responseCode = 0;
         StringBuilder response = new StringBuilder();
         TokenResponse tokenResponse = null;
@@ -101,7 +112,7 @@ public class Auth2T24TokenService {
                         logger.error("An exception occurred when saving the token", e);
                         e.printStackTrace();
                     }
-                    logger.info(tokenResponse.getAccess_token());
+                    
                     return tokenResponse.getAccess_token();
                 } else {
                     throw new IOException("Failed to retrieve access token. HTTP response code: " + responseCode);
@@ -118,8 +129,5 @@ public class Auth2T24TokenService {
         }
     }
     
-    private Long generateTokenId() {
-        return System.currentTimeMillis();
-    }
 
 }

@@ -192,6 +192,9 @@ public class UserController {
                 userUpdate = userService.updateUsersAndUnlock(user.getGroup(), user.isStatus(), user.getId(),user.getUpdatedBy());
             }else {
                 userUpdate = userService.updateUsers(user.getGroup(), user.isStatus(), user.getId(),user.getUpdatedBy());
+               
+                // for super administrator password reset front-end uncomment
+                // userUpdate = userService.updateUsers(user.getGroup(), user.isStatus(), user.getId(),user.getUpdatedBy(),passwordEncoder.encode(user.getPassword()));
             }
             GlobalResponse globalResponse = null;
             if (userUpdate > 0) {
@@ -360,12 +363,6 @@ public class UserController {
 
     @GetMapping(value = "/users/toverify")
     public ResponseEntity<?> getUsersToVerify(
-//    		@RequestParam("fromDt")
-//    		@DateTimeFormat(pattern="yyyy-MM-dd")
-//    		Date fromDt,
-//    		@RequestParam(value="toDt")
-//    		@DateTimeFormat(pattern="yyyy-MM-dd")
-//    		Date toDt
     ) throws NoSuchAlgorithmException, IOException {
         try {
             System.out.println("works...");
@@ -421,7 +418,7 @@ public class UserController {
                     false, "201", Api.API_VERSION), HttpStatus.OK);
         } catch (Exception e) {
             GlobalResponse resp = new GlobalResponse("404", "error processing request", false, GlobalResponse.APIV);
-            e.printStackTrace();
+            e.printStackTrace();            
             return new ResponseEntity<>(resp, HttpStatus.OK);
         }
     }

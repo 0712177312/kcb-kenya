@@ -67,7 +67,7 @@ public class CustomerService {
 	private AESsecure aeSsecure;
 	
 	@Autowired
-	private static Auth2T24TokenService auth2t24TokenService;
+	private Auth2T24TokenService auth2t24TokenService;
 	@Autowired
 	private EncryptionPayloadResp encryptionPayloadResp;
 	Gson gson = new Gson();
@@ -283,8 +283,17 @@ public class CustomerService {
 				GlobalResponse resp = new GlobalResponse("404", "error processing request: customerid is missing", false, GlobalResponse.APIV);
 				return resp;
 			}		   
-			//get access  token 
-			String accessToken = auth2t24TokenService.getAccessToken(env); 
+				//get access  token 
+				String accessToken = null;
+				try {
+					accessToken = auth2t24TokenService.getAccessToken(env);
+					log.info("access -- token :: {}",accessToken);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+				log.info(accessToken);
+				log.info("Exited the get access token");
 		       if (urlConnection instanceof HttpsURLConnection) {
 		    	   connection = (HttpsURLConnection) urlConnection;
 	            } else if(urlConnection instanceof HttpURLConnection) {
@@ -315,7 +324,8 @@ public class CustomerService {
 	        OutputStreamWriter getCustAndStaffOsw = new OutputStreamWriter(getCustAndStaffOs, "UTF-8");  
 	        
 	        //T24UpdateReqObject object = new T24UpdateReqObject(env.getProperty("cobankingAuthName"),env.getProperty("cobankingAuthPass"),new T24UpdateParams(customerID,updateStatus));
-	        T24UpdateReqObject object = new T24UpdateReqObject("string","string",new T24UpdateParams(customerID,updateStatus));
+	        T24UpdateReqObject object = new T24UpdateReqObject("string","string",
+	        		       new T24UpdateParams(customerID,updateStatus));
   
 	        String json = new Gson().toJson(object);
 	        
@@ -327,10 +337,10 @@ public class CustomerService {
 	        			       
 			int status = connection.getResponseCode();
 			
-			log.info("updateCustomerAndStaff - RESPONSE CODE: "+status);
+			log.info("UpdateCustomerAndStaff!!!!!!!!!!!!!!!!!!!!!!!!! "+status);
 			
 			if(status == 200) {
-				System.out.println("200: updateCustomerAndStaff!!!!!!!!!!!!!!!!!!!!!!!!!");
+				
 				reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));						
 				while((line = reader.readLine()) != null) {
 					customerAndStaffBuffer.append(line);
@@ -374,9 +384,8 @@ public class CustomerService {
     }
 
 	public ResponseEntity<?> t24CustomerInquiry(Customer customer) throws NoSuchAlgorithmException, IOException {
-		//log.error("t24CustomerInquiry!");
+		log.error("t24CustomerInquiry!");
 		
-		String responsePayload="";
 		String customerInqEndpoint = env.getProperty("customerInqEndpoint");
 		URL customerDetailsUrl = new URL(customerInqEndpoint);
 		HttpURLConnection connection = null;
@@ -389,9 +398,17 @@ public class CustomerService {
 			
 			log.info("Inside customer inquiry :: "+customerInqEndpoint);
 			//get access  token 
-			String accessToken = auth2t24TokenService.getAccessToken(env); 
-
-//			log.info(accessToken);
+			String accessToken = null;
+			try {
+				accessToken = auth2t24TokenService.getAccessToken(env);
+				log.info("access -- token :: {}",accessToken);
+			} catch (Exception e) {
+				  log.error("IOException inside customerservice => getaccesstoken: ", e.getMessage());
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			log.info(accessToken);
+			log.info("Exited the get access token");
 		     if (urlConnection instanceof HttpsURLConnection) {
 		    	   connection = (HttpsURLConnection) urlConnection;
 	            } else if(urlConnection instanceof HttpURLConnection) {
@@ -431,7 +448,7 @@ public class CustomerService {
 	        } 
 	        			       
 			int status = connection.getResponseCode();
-			System.out.println("STATUS FROM T24!!!!!!!!!!!!!!"+status);
+			System.out.println("STATUS FROM T24 =>> t24CustomerInquiry !!!!!!!!!!!!!! "+status);
 			
 			if(status == 200) {
 				reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));						
@@ -473,15 +490,15 @@ public class CustomerService {
 				//return new ResponseEntity<>(responsePayload, HttpStatus.OK);
 			}
 	}catch(Exception e) {
-		log.error("IOException: ", e.getMessage());
-		GlobalResponse resp = new GlobalResponse("500", "T24 endpoint is unreachable", false, GlobalResponse.APIV);
+		       log.error("IOException: ", e.getMessage());
+		    GlobalResponse resp = new GlobalResponse("500", "T24 endpoint is unreachable", false, GlobalResponse.APIV);
 
 			//responsePayload = aeSsecure.encrypt(gson.toJson(resp).toString());
 			String jsonObj = CommonFunctions.convertPojoToJson(resp);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
-
+			//return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
+			return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 		//return new ResponseEntity<>(responsePayload, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 		

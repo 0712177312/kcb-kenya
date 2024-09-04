@@ -65,7 +65,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query(nativeQuery = true, value = "UPDATE USERMASTER set status='1' WHERE username=?1")
 	//UNCOMMENT FOR MAKER CHECKER//@Query(nativeQuery = true, value = "UPDATE USERMASTER set status='1', verified='N' WHERE username=?1")
 	int updateStatusToTrue(String username);
-
 	@Modifying
 	@Transactional
 	@Query(nativeQuery = true, value = "UPDATE USERMASTER set status='0' WHERE username=?1")

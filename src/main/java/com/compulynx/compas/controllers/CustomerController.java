@@ -49,10 +49,10 @@ import com.compulynx.compas.services.UserGroupService;
 public class CustomerController {
 
 	private static final Logger log = LoggerFactory.getLogger(TellerController.class);
-	
+
 	private static HttpsURLConnection httpsURLConnection;
 	private static BufferedReader reader;
-	private static String line="";
+	private static String line = "";
 
 	@Autowired
 	private Environment env;
@@ -70,26 +70,27 @@ public class CustomerController {
 	private AESsecure aeSsecure;
 	@Autowired
 	private EncryptionPayloadResp encryptionPayloadResp;
-	//Gson gson = new Gson();
+	// Gson gson = new Gson();
 	String dateFormat = "yyyy-MM-dd HH:mm:ss";
-	Gson gson = new GsonBuilder()
-			.setDateFormat(dateFormat)
-			.create();
-	
-	@PostMapping("customer_inquiry")
-	public ResponseEntity<?> getCustomerFromT24(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	Gson gson = new GsonBuilder().setDateFormat(dateFormat).create();
 
-		//Customer customer =  new Gson().fromJson(aeSsecure.decrypt(encCustomer),Customer.class);
+	@PostMapping("customer_inquiry")
+	public ResponseEntity<?> getCustomerFromT24(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer)
+			throws NoSuchAlgorithmException, IOException {
+
+		// Customer customer = new
+		// Gson().fromJson(aeSsecure.decrypt(encCustomer),Customer.class);
 
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 
-		//String responsePayload="";
-		if(customer.getMnemonic() =="" || customer.getMnemonic() == null) {
-			GlobalResponse resp = new GlobalResponse("404", "error processing request: staffid is missing", false, GlobalResponse.APIV);
+		// String responsePayload="";
+		if (customer.getMnemonic() == "" || customer.getMnemonic() == null) {
+			GlobalResponse resp = new GlobalResponse("404", "error processing request: staffid is missing", false,
+					GlobalResponse.APIV);
 			String jsonObj = CommonFunctions.convertPojoToJson(resp);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
@@ -97,21 +98,22 @@ public class CustomerController {
 		}
 		return customerService.t24CustomerInquiry(customer);
 	}
+
 	@GetMapping(value = "/gtCustomers")
 	public ResponseEntity<?> getCustomers() throws NoSuchAlgorithmException, IOException {
 		try {
 			List<Customer> customers = customerService.getCustomers();
 			if (customers.size() > 0) {
-				GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found",
-						customers);
+				GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true,
+						"customers found", customers);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			}
-			GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers found",
-					customers);
+			GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false,
+					"no customers found", customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -124,18 +126,21 @@ public class CustomerController {
 			String jsonObj = CommonFunctions.convertPojoToJson(resp);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers)
+					.body(encryptionPayloadResp.getEncryptedPayload());
 		}
 	}
 
 	@PostMapping(value = "/getMatchedCustomers")
-	public ResponseEntity<?> identifyCustomers(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomers) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> identifyCustomers(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomers)
+			throws NoSuchAlgorithmException, IOException {
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomers);
-		Type listType = new TypeToken<List<Customer>>() {}.getType();
-		List<Customer> customers =  new Gson().fromJson(decryptedData,listType);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomers);
+		Type listType = new TypeToken<List<Customer>>() {
+		}.getType();
+		List<Customer> customers = new Gson().fromJson(decryptedData, listType);
 		try {
 			List<Customer> custs = new ArrayList<>();
 			for (Customer cus : customers) {
@@ -159,9 +164,9 @@ public class CustomerController {
 			}
 			GlobalResponse2 globalResponse = null;
 			if (customers.size() > 0) {
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", custs);
-			}else
-			 globalResponse =new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers found", custs);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", custs);
+			} else
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers found", custs);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -180,22 +185,25 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/identifyCustomer")
-	public ResponseEntity<?> identifyCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> identifyCustomer(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer)
+			throws NoSuchAlgorithmException, IOException {
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 			Customer cust = customerService.identifyCustomer(customer.getCustomerId());
 			if (!(cust.equals(null))) {
-				CustomerResponse customerResponse = new CustomerResponse("000", "customer", true, GlobalResponse.APIV, cust);
+				CustomerResponse customerResponse = new CustomerResponse("000", "customer", true, GlobalResponse.APIV,
+						cust);
 				String jsonObj = CommonFunctions.convertPojoToJson(customerResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			}
-			CustomerResponse customerResponse = new CustomerResponse("201", "customer not found", false, GlobalResponse.APIV, cust);
+			CustomerResponse customerResponse = new CustomerResponse("201", "customer not found", false,
+					GlobalResponse.APIV, cust);
 			String jsonObj = CommonFunctions.convertPojoToJson(customerResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
@@ -207,18 +215,19 @@ public class CustomerController {
 			String jsonObj = CommonFunctions.convertPojoToJson(resp);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers)
+					.body(encryptionPayloadResp.getEncryptedPayload());
 		}
 	}
 
 	@PostMapping(value = "/checkCustomer")
-	public ResponseEntity<?> checkCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+	public ResponseEntity<?> checkCustomer(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer) {
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 			Customer cust = customerService.checkCustomer(customer.getMnemonic(), customer.getMnemonic());
 
 			if (cust != null) {
@@ -236,25 +245,28 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/obtainCustomerDetails")
-	public ResponseEntity<?> obtainCustomerDetails(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> obtainCustomerDetails(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
 
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 			Customer cust = customerService.checkCustomer(customer.getMnemonic(), customer.getMnemonic());
 
 			if (cust != null) {
-				CustomerResponse customerResponse = new CustomerResponse("000", "customer found", true, GlobalResponse.APIV, cust);
+				CustomerResponse customerResponse = new CustomerResponse("000", "customer found", true,
+						GlobalResponse.APIV, cust);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(customerResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			} else {
-				CustomerResponse customerResponse = new CustomerResponse("201", "customer not found", false, GlobalResponse.APIV, cust);
+				CustomerResponse customerResponse = new CustomerResponse("201", "customer not found", false,
+						GlobalResponse.APIV, cust);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(customerResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -268,18 +280,20 @@ public class CustomerController {
 			String jsonObj = CommonFunctions.convertPojoToJson(resp);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers)
+					.body(encryptionPayloadResp.getEncryptedPayload());
 		}
 	}
 
 	@PostMapping({ "/upCustomerDetails" })
-	public ResponseEntity<?> upCustomerDetails(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+	public ResponseEntity<?> upCustomerDetails(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) {
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 
 			Customer cust = null;
 			int customerUndeleted = 0;
@@ -303,47 +317,50 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/approveCustomer")
-	public ResponseEntity<?> approveCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> approveCustomer(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer)
+			throws NoSuchAlgorithmException, IOException {
 
 		log.info("/approveCustomer called");
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 
 		try {
-            String t24Url = env.getProperty("tserver");
+			String t24Url = env.getProperty("tserver");
 
-            String customerId = customer.getCustomerId();
-            log.info("update url for " + t24Url);
-           log.info("verified by ::: {} ",customer.getVerifiedBy());
+			String customerId = customer.getCustomerId();
+			log.info("update url for " + t24Url);
+			log.info("verified by ::: {} ", customer.getVerifiedBy());
 			System.out.println("update url for " + t24Url);
-			
-			GlobalResponse response = customerService.updateCustomerAndStaff(t24Url, customerId,"TRUE");            
+
+			GlobalResponse response = customerService.updateCustomerAndStaff(t24Url, customerId, "TRUE");
 
 			log.info("T24  response code " + response.getRespCode());
-            log.info("T24  response message" + response.getRespMessage());
-            
-            if(!response.getRespCode().equalsIgnoreCase("200")){
-            	log.info("T24 with status 400 " + response.getRespMessage());
-				GlobalResponse globalResponse = new GlobalResponse(response.getRespCode(), response.getRespMessage(), false,GlobalResponse.APIV);
+			log.info("T24  response message" + response.getRespMessage());
+
+			if (!response.getRespCode().equalsIgnoreCase("200")) {
+				log.info("T24 with status 400 " + response.getRespMessage());
+				GlobalResponse globalResponse = new GlobalResponse(response.getRespCode(), response.getRespMessage(),
+						false, GlobalResponse.APIV);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
-            }
-        } catch (Exception e) {
-            log.error("Error in proccesing ", e);
-			GlobalResponse globalResponse = new GlobalResponse("500", "HpptRestProcessor Exception", false, GlobalResponse.APIV);
+			}
+		} catch (Exception e) {
+			log.error("Error in proccesing ", e);
+			GlobalResponse globalResponse = new GlobalResponse("500", "HpptRestProcessor Exception", false,
+					GlobalResponse.APIV);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 			return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
-        }
-        log.info("T24 success response ");
+		}
+		log.info("T24 success response ");
 
 		try {
 			int cust = customerService.approveCustomer(customer.getVerifiedBy(), customer.getCustomerId());
@@ -352,33 +369,35 @@ public class CustomerController {
 			if (cust > 0) {
 				log.info("Compas customer found! ");
 				String recipient = customer.getEmail();
-				if(recipient == null) {
+				if (recipient == null) {
 					log.info("Email for " + customer.getCustomerName() + " is null");
-				}else if(!recipient.contains("@")){
+				} else if (!recipient.contains("@")) {
 					log.info("Email for " + customer.getCustomerName() + " is not available");
-				}else {
+				} else {
 					String subject = "Biometric Details of Customer Captured";
-					String emailContent = "Dear " + customer.getCustomerName() + ", your biometric details have been successfully registered. For any queries please call 0711087000 or 0732187000.";
+					String emailContent = "Dear " + customer.getCustomerName()
+							+ ", your biometric details have been successfully registered. For any queries please call 0711087000 or 0732187000.";
 					emailSender.sendEmail(recipient, subject, emailContent);
 					log.info("Email to customer scheduled to be sent to " + customer.getCustomerName());
 				}
 				String smsUrl = env.getProperty("smsUrl");
-                String customerName = customer.getCustomerName();
-                String phoneNumber = customer.getPhoneNumber();
-                String smsApiUsername = env.getProperty("smsApiUsername");
-                String smsApiPassword = env.getProperty("smsApiPassword");
-                String getResponse = HttpRestProccesor.sendGetRequest(smsUrl, "sms", customerName, phoneNumber, smsApiUsername, smsApiPassword);
-				log.info("SMS Get Request Response is: "+  getResponse);
+				String customerName = customer.getCustomerName();
+				String phoneNumber = customer.getPhoneNumber();
+				String smsApiUsername = env.getProperty("smsApiUsername");
+				String smsApiPassword = env.getProperty("smsApiPassword");
+				String getResponse = HttpRestProccesor.sendGetRequest(smsUrl, "sms", customerName, phoneNumber,
+						smsApiUsername, smsApiPassword);
+				log.info("SMS Get Request Response is: " + getResponse);
 
 				GlobalResponse globalResponse = new GlobalResponse("000",
-						"customer  " + customer.getCustomerId() + " verified successfully",true,GlobalResponse.APIV);
+						"customer  " + customer.getCustomerId() + " verified successfully", true, GlobalResponse.APIV);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			}
-			GlobalResponse globalResponse = new GlobalResponse("404", "no customers found", false,GlobalResponse.APIV);
+			GlobalResponse globalResponse = new GlobalResponse("404", "no customers found", false, GlobalResponse.APIV);
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
@@ -390,27 +409,28 @@ public class CustomerController {
 			String jsonObj = CommonFunctions.convertPojoToJson(resp);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers)
+					.body(encryptionPayloadResp.getEncryptedPayload());
 		}
 	}
 
 	@PostMapping(value = "/customersToApprove")
-	public ResponseEntity<?> getCustomersToApprove(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> getCustomersToApprove(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 
 		try {
 			System.out.println("Branch Code: " + customer.getBranchCode());
 			System.out.println("Right ID: " + customer.getVerifiedBy());
 			UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(customer.getVerifiedBy()));
 			List<CustomersToApprove> customers = null;
-			if (userGroup.getGroupCode().equalsIgnoreCase("G001")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G002") 
-                    || userGroup.getGroupCode().equalsIgnoreCase("G003")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G004")) {
+			if (userGroup.getGroupCode().equalsIgnoreCase("G001") || userGroup.getGroupCode().equalsIgnoreCase("G002")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G003")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G004")) {
 				customers = customerService.getCustomersToVerifyAll();
 			} else {
 				customers = customerService.getCustomersToVerify(customer.getBranchCode());
@@ -418,10 +438,12 @@ public class CustomerController {
 
 			GlobalResponse2 globalResponse;
 			if (customers.size() > 0) {
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", false, "customers to verify found", customers);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", false, "customers to verify found",
+						customers);
 
 			} else
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers to verify found", customers);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers to verify found",
+						customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -438,15 +460,18 @@ public class CustomerController {
 			return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 		}
 	}
+
 	@GetMapping(value = "/customersToApproveDetach")
 	public ResponseEntity<?> getCustomersToApproveDetach() throws NoSuchAlgorithmException, IOException {
 		try {
 			List<CustomersToApproveDetach> customers = customerService.getCustomersToApproveDetach();
 			GlobalResponse2 globalResponse;
 			if (customers.size() > 0)
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers to approve detach found", customers);
-			 else
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers to approve detach found", customers);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true,
+						"customers to approve detach found", customers);
+			else
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false,
+						"no customers to approve detach found", customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -465,12 +490,13 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/gtCustomerToWaive")
-	public ResponseEntity<?> getCustomerToWaive(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> getCustomerToWaive(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer)
+			throws NoSuchAlgorithmException, IOException {
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 		try {
 			Customer cust = customerService.checkCustomer(customer.getCustomerId(), customer.getCustomerId());
 			System.out.println("customer###" + cust.getVerified());
@@ -485,8 +511,8 @@ public class CustomerController {
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			}
 			if (cust.getWaived().equalsIgnoreCase("W")) {
-				CustomerResponse customerResponse = new CustomerResponse("201", "customer with specified id is already waived",
-						false, GlobalResponse.APIV, cust);
+				CustomerResponse customerResponse = new CustomerResponse("201",
+						"customer with specified id is already waived", false, GlobalResponse.APIV, cust);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(customerResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -502,7 +528,8 @@ public class CustomerController {
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			}
-			CustomerResponse customerResponse = new CustomerResponse("201", "customer not found", false, GlobalResponse.APIV, cust);
+			CustomerResponse customerResponse = new CustomerResponse("201", "customer not found", false,
+					GlobalResponse.APIV, cust);
 			String jsonObj = CommonFunctions.convertPojoToJson(customerResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 			HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
@@ -525,16 +552,16 @@ public class CustomerController {
 		try {
 			List<CustomerWaived> customers = customerService.getWaiveCustomers();
 			if (customers.size() > 0) {
-				GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found",
-						customers);
+				GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true,
+						"customers found", customers);
 
 				String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 				encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
 				HttpHeaders headers = CommonFunctions.addEncryptionHeaders(encryptionPayloadResp.getEncryptedKey());
 				return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 			}
-			GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false, "no customers found",
-					customers);
+			GlobalResponse2 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "201", false,
+					"no customers found", customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -552,15 +579,16 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/waiveCustomer")
-	public ResponseEntity<?> waiveCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+	public ResponseEntity<?> waiveCustomer(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer) {
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 
-			int cust = customerService.waiveCustomer(customer.getWaivedBy(), customer.getCustomerId(),customer.getReason());
+			int cust = customerService.waiveCustomer(customer.getWaivedBy(), customer.getCustomerId(),
+					customer.getReason());
 			if (cust > 0) {
 				return new ResponseEntity<>(
 						new GlobalResponse("000", "customer waived successfully", true, GlobalResponse.APIV),
@@ -579,56 +607,56 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/approveCustomerWaive")
-	public ResponseEntity<?> approveCustomerWaive(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> approveCustomerWaive(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
-		try{
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
+		try {
 			log.info("Update T24 BIO Exemption ");
 			String t24Url = env.getProperty("tserver");
 
 			log.info("update url for " + t24Url);
 			System.out.println("gif" + customer.getCustomerId());
-			log.info("Action :::: {}",customer.getAction());
-			GlobalResponse response=null;
-			
-			// Added this block - to check either approve or un-waive
-            if(customer.getAction().equalsIgnoreCase("W")) {
+			log.info("Action :::: {}", customer.getAction());
+			GlobalResponse response = null;
 
-			     response = customerService.updateCustomerAndStaff(t24Url, customer.getCustomerId(),"EXEMPTED");
-            }else if(customer.getAction().equalsIgnoreCase("N")) {
-            	 response = customerService.updateCustomerAndStaff(t24Url, customer.getCustomerId(),"TRUE");
-            }
-            // End of the block
+			// Added this block - to check either approve or un-waive
+			if (customer.getAction().equalsIgnoreCase("W")) {
+
+				response = customerService.updateCustomerAndStaff(t24Url, customer.getCustomerId(), "EXEMPTED");
+			} else if (customer.getAction().equalsIgnoreCase("N")) {
+				response = customerService.updateCustomerAndStaff(t24Url, customer.getCustomerId(), "TRUE");
+			}
+			// End of the block
 			log.info("T24 response response " + response.getRespMessage());
-			if(response.getRespCode() != "200"){
+			if (response.getRespCode() != "200") {
 				log.info("Update T24 BIO Exemption FAILED ");
 				log.info("T24 response Code: " + response.getRespCode());
-				return new ResponseEntity<>(new GlobalResponse(response.getRespCode(), response.getRespMessage(), false,GlobalResponse.APIV),
-						HttpStatus.OK);
+				return new ResponseEntity<>(new GlobalResponse(response.getRespCode(), response.getRespMessage(), false,
+						GlobalResponse.APIV), HttpStatus.OK);
 			}
-		}catch(Exception ex){
+		} catch (Exception ex) {
 			log.error("Update Customer Bio Exemption", ex.getMessage());
-			return new ResponseEntity<>(new GlobalResponse("500", "T24: HpptRestProcessor Exception", false, GlobalResponse.APIV),
+			return new ResponseEntity<>(
+					new GlobalResponse("500", "T24: HpptRestProcessor Exception", false, GlobalResponse.APIV),
 					HttpStatus.OK);
 		}
 
 		try {
 			log.info("Update COMPAS BIO Exemption Approval request");
-			int cust = customerService.approveCustomerWaive(customer.getWaived(), customer.getWaivedApprovedBy(),customer.getReason(),
-					customer.getCustomerId());
+			int cust = customerService.approveCustomerWaive(customer.getWaived(), customer.getWaivedApprovedBy(),
+					customer.getReason(), customer.getCustomerId());
 			if (cust > 0) {
 				log.info("Update COMPAS BIO Exemption Approval successfull");
-				return new ResponseEntity<>(
-						new GlobalResponse("000", "COMPAS: customer details updated successfully", true, GlobalResponse.APIV),
-						HttpStatus.OK);
+				return new ResponseEntity<>(new GlobalResponse("000", "COMPAS: customer details updated successfully",
+						true, GlobalResponse.APIV), HttpStatus.OK);
 			} else {
 				log.info("Update COMPAS BIO Exemption Approval failed");
-				return new ResponseEntity<>(
-						new GlobalResponse("201","COMPAS: failed to update customer details", false, GlobalResponse.APIV),
-						HttpStatus.OK);
+				return new ResponseEntity<>(new GlobalResponse("201", "COMPAS: failed to update customer details",
+						false, GlobalResponse.APIV), HttpStatus.OK);
 			}
 		} catch (Exception e) {
 			log.info("Update COMPAS BIO Exemption Approval server error!");
@@ -640,13 +668,14 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/rejectCustomerWaive")
-	public ResponseEntity<?> rejectCustomerWaive(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+	public ResponseEntity<?> rejectCustomerWaive(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) {
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 			System.out.println("cif" + customer.getCustomerId());
 			int cust = customerService.rejectCustomerWaive(customer.getWaivedApprovedBy(), customer.getCustomerId());
 			if (cust > 0) {
@@ -667,15 +696,17 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/rejectCustomerEnrollment")
-	public ResponseEntity<?> rejectCustomerEnrollment(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+	public ResponseEntity<?> rejectCustomerEnrollment(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) {
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			log.info("decryptedData {}",decryptedData);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
-			int updates = customerService.rejectCustomerEnrollment(customer.getRejectedBy(), customer.getCustomerId(),customer.getReason1());
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			log.info("decryptedData {}", decryptedData);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
+			int updates = customerService.rejectCustomerEnrollment(customer.getRejectedBy(), customer.getCustomerId(),
+					customer.getReason1());
 			if (updates > 0) {
 				return new ResponseEntity<>(
 						new GlobalResponse("000", "Customer rejected successfully", true, GlobalResponse.APIV),
@@ -692,48 +723,44 @@ public class CustomerController {
 			return new ResponseEntity<>(resp, HttpStatus.OK);
 		}
 	}
-	
-	
-	
-	
+
 	@GetMapping("/previewBioExemption")
 	public ResponseEntity<?> previewBioExemption(@RequestHeader HttpHeaders httpHeaders,
 			@RequestParam("FromDt") @DateTimeFormat(pattern = "yyyy-MM-dd") String encFromDate,
 			@RequestParam(value = "ToDt") @DateTimeFormat(pattern = "yyyy-MM-dd") String encToDate,
 			@RequestParam(value = "branchCode") String encBranchCode,
-            @RequestParam(value = "groupid") String encGroupId) throws NoSuchAlgorithmException, IOException {
+			@RequestParam(value = "groupid") String encGroupId) throws NoSuchAlgorithmException, IOException {
 
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decFromDate = aeSsecure.integratedDataDecryption(key,encFromDate);
-		String decToDate = aeSsecure.integratedDataDecryption(key,encToDate);
-		String decBranchCode = aeSsecure.integratedDataDecryption(key,encBranchCode);
-		String decGroupId = aeSsecure.integratedDataDecryption(key,encGroupId);
+		String decFromDate = aeSsecure.integratedDataDecryption(key, encFromDate);
+		String decToDate = aeSsecure.integratedDataDecryption(key, encToDate);
+		String decBranchCode = aeSsecure.integratedDataDecryption(key, encBranchCode);
+		String decGroupId = aeSsecure.integratedDataDecryption(key, encGroupId);
 
-		Date fromDate =  new Gson().fromJson(decFromDate,Date.class);
-		Date toDate =  new Gson().fromJson(decToDate,Date.class);
-		String branchCode =  new Gson().fromJson(decBranchCode,String.class);
-		String groupId =  new Gson().fromJson(decGroupId,String.class);
+		Date fromDate = new Gson().fromJson(decFromDate, Date.class);
+		Date toDate = new Gson().fromJson(decToDate, Date.class);
+		String branchCode = new Gson().fromJson(decBranchCode, String.class);
+		String groupId = new Gson().fromJson(decGroupId, String.class);
 
 		try {
 			Date toDatePlus1 = CommonFunctions.getOneDayPlusDate(toDate);
-			System.out.println("####"+toDatePlus1);
-            List<CustomerToDispaly> customers;
-            UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(groupId));
-            if (userGroup.getGroupCode().equalsIgnoreCase("G001")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G002") 
-                    || userGroup.getGroupCode().equalsIgnoreCase("G003")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G004")) {
-                customers = customerService.gtBioExemption(fromDate, toDatePlus1);
-            }else{
-                customers = customerService.getBioExemptionByBranch(fromDate, toDatePlus1, branchCode);
-            }
+			System.out.println("####" + toDatePlus1);
+			List<CustomerToDispaly> customers;
+			UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(groupId));
+			if (userGroup.getGroupCode().equalsIgnoreCase("G001") || userGroup.getGroupCode().equalsIgnoreCase("G002")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G003")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G004")) {
+				customers = customerService.gtBioExemption(fromDate, toDatePlus1);
+			} else {
+				customers = customerService.getBioExemptionByBranch(fromDate, toDatePlus1, branchCode);
+			}
 			GlobalResponse2 globalResponse = null;
 			if (customers.size() > 0) {
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
-			}else
-			 	 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
+			} else
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -752,48 +779,47 @@ public class CustomerController {
 		}
 	}
 
-
 	@GetMapping("/previewCustomers")
 	public ResponseEntity<?> previewCustomers(@RequestHeader HttpHeaders httpHeaders,
 			@RequestParam("FromDt") @DateTimeFormat(pattern = "yyyy-MM-dd") String encFromDate,
 			@RequestParam(value = "ToDt") @DateTimeFormat(pattern = "yyyy-MM-dd") String encToDate,
 			@RequestParam(value = "enrolledType") String encEnrolledType,
 			@RequestParam(value = "branchCode") String encBranchCode,
-            @RequestParam(value = "groupid") String encGroupId) throws NoSuchAlgorithmException, IOException {
+			@RequestParam(value = "groupid") String encGroupId) throws NoSuchAlgorithmException, IOException {
 
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decFromDate = aeSsecure.integratedDataDecryption(key,encFromDate);
-		String decToDate = aeSsecure.integratedDataDecryption(key,encToDate);
-		String decEnrolledType = aeSsecure.integratedDataDecryption(key,encEnrolledType);
-		String decBranchCode = aeSsecure.integratedDataDecryption(key,encBranchCode);
-		String decGroupId = aeSsecure.integratedDataDecryption(key,encGroupId);
+		String decFromDate = aeSsecure.integratedDataDecryption(key, encFromDate);
+		String decToDate = aeSsecure.integratedDataDecryption(key, encToDate);
+		String decEnrolledType = aeSsecure.integratedDataDecryption(key, encEnrolledType);
+		String decBranchCode = aeSsecure.integratedDataDecryption(key, encBranchCode);
+		String decGroupId = aeSsecure.integratedDataDecryption(key, encGroupId);
 
-		Date fromDate =  new Gson().fromJson(decFromDate,Date.class);
-		Date toDate =  new Gson().fromJson(decToDate,Date.class);
-		String enrolledType =  new Gson().fromJson(decEnrolledType,String.class);
-		String branchCode =  new Gson().fromJson(decBranchCode,String.class);
-		String groupId =  new Gson().fromJson(decGroupId,String.class);
+		Date fromDate = new Gson().fromJson(decFromDate, Date.class);
+		Date toDate = new Gson().fromJson(decToDate, Date.class);
+		String enrolledType = new Gson().fromJson(decEnrolledType, String.class);
+		String branchCode = new Gson().fromJson(decBranchCode, String.class);
+		String groupId = new Gson().fromJson(decGroupId, String.class);
 
 		try {
 			Date toDatePlus1 = CommonFunctions.getOneDayPlusDate(toDate);
-			System.out.println("####"+toDatePlus1);
-            List<CustomerToDispaly> customers;
-            UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(groupId));
-            if (userGroup.getGroupCode().equalsIgnoreCase("G001")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G002") 
-                    || userGroup.getGroupCode().equalsIgnoreCase("G003")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G004")) {
-                customers = customerService.gtEnrolledCustomers(fromDate, toDatePlus1, enrolledType);
-            }else{
-                customers = customerService.getEnrolledCustomersByBranch(fromDate, toDatePlus1, enrolledType, branchCode);
-            }
+			System.out.println("####" + toDatePlus1);
+			List<CustomerToDispaly> customers;
+			UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(groupId));
+			if (userGroup.getGroupCode().equalsIgnoreCase("G001") || userGroup.getGroupCode().equalsIgnoreCase("G002")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G003")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G004")) {
+				customers = customerService.gtEnrolledCustomers(fromDate, toDatePlus1, enrolledType);
+			} else {
+				customers = customerService.getEnrolledCustomersByBranch(fromDate, toDatePlus1, enrolledType,
+						branchCode);
+			}
 			GlobalResponse2 globalResponse = null;
 			if (customers.size() > 0) {
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
-			}else
-			 	 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
+			} else
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -818,42 +844,41 @@ public class CustomerController {
 			@RequestParam(value = "ToDt") @DateTimeFormat(pattern = "yyyy-MM-dd") String encToDate,
 			@RequestParam(value = "enrolledType") String encEnrolledType,
 			@RequestParam(value = "branchCode") String encBranchCode,
-            @RequestParam(value = "groupid") String encGroupId) throws NoSuchAlgorithmException, IOException {
+			@RequestParam(value = "groupid") String encGroupId) throws NoSuchAlgorithmException, IOException {
 
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decFromDate = aeSsecure.integratedDataDecryption(key,encFromDate);
-		String decToDate = aeSsecure.integratedDataDecryption(key,encToDate);
-		String decEnrolledType = aeSsecure.integratedDataDecryption(key,encEnrolledType);
-		String decBranchCode = aeSsecure.integratedDataDecryption(key,encBranchCode);
-		String decGroupId = aeSsecure.integratedDataDecryption(key,encGroupId);
-		
+		String decFromDate = aeSsecure.integratedDataDecryption(key, encFromDate);
+		String decToDate = aeSsecure.integratedDataDecryption(key, encToDate);
+		String decEnrolledType = aeSsecure.integratedDataDecryption(key, encEnrolledType);
+		String decBranchCode = aeSsecure.integratedDataDecryption(key, encBranchCode);
+		String decGroupId = aeSsecure.integratedDataDecryption(key, encGroupId);
 
-		Date fromDate =  new Gson().fromJson(decFromDate,Date.class);
-		Date toDate =  new Gson().fromJson(decToDate,Date.class);
-		String enrolledType =  new Gson().fromJson(decEnrolledType,String.class);
-		String branchCode =  new Gson().fromJson(decBranchCode,String.class);
-		String groupId =  new Gson().fromJson(decGroupId,String.class);
+		Date fromDate = new Gson().fromJson(decFromDate, Date.class);
+		Date toDate = new Gson().fromJson(decToDate, Date.class);
+		String enrolledType = new Gson().fromJson(decEnrolledType, String.class);
+		String branchCode = new Gson().fromJson(decBranchCode, String.class);
+		String groupId = new Gson().fromJson(decGroupId, String.class);
 
 		try {
 			Date toDatePlus1 = CommonFunctions.getOneDayPlusDate(toDate);
-			System.out.println("####"+toDatePlus1);
-            List<ConvertedCustomerStaff> customers;
-            UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(groupId));
-            if (userGroup.getGroupCode().equalsIgnoreCase("G001")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G002") 
-                    || userGroup.getGroupCode().equalsIgnoreCase("G003")
-                    || userGroup.getGroupCode().equalsIgnoreCase("G004")) {
-                customers = customerService.GtConvertedCustomersStaff(fromDate, toDatePlus1, enrolledType);
-            }else{
-                customers = customerService.GtConvertedCustomersStaffByBranch(fromDate, toDatePlus1, enrolledType, branchCode);
-            }
+			System.out.println("####" + toDatePlus1);
+			List<ConvertedCustomerStaff> customers;
+			UserGroup userGroup = userGroupService.getRightCode(Long.valueOf(groupId));
+			if (userGroup.getGroupCode().equalsIgnoreCase("G001") || userGroup.getGroupCode().equalsIgnoreCase("G002")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G003")
+					|| userGroup.getGroupCode().equalsIgnoreCase("G004")) {
+				customers = customerService.GtConvertedCustomersStaff(fromDate, toDatePlus1, enrolledType);
+			} else {
+				customers = customerService.GtConvertedCustomersStaffByBranch(fromDate, toDatePlus1, enrolledType,
+						branchCode);
+			}
 			GlobalResponse2 globalResponse = null;
 			if (customers.size() > 0) {
-				 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
-			}else
-			 	 globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
+			} else
+				globalResponse = new GlobalResponse2(GlobalResponse.APIV, "000", true, "customers found", customers);
 
 			String jsonObj = CommonFunctions.convertPojoToJson(globalResponse);
 			encryptionPayloadResp = aeSsecure.integratedDataEncryption(jsonObj);
@@ -871,16 +896,17 @@ public class CustomerController {
 			return ResponseEntity.ok().headers(headers).body(encryptionPayloadResp.getEncryptedPayload());
 		}
 	}
-	
+
 	@PostMapping(value = "/deleteCustomer")
-	public ResponseEntity<?> deleteCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
-		String responsePayload="";
+	public ResponseEntity<?> deleteCustomer(@RequestHeader HttpHeaders httpHeaders, @RequestBody String encCustomer)
+			throws NoSuchAlgorithmException, IOException {
+		String responsePayload = "";
 		try {
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 			int cust = customerService.deleteCustomer(customer.getDeletedBy(), customer.getCustomerId());
 
 			if (cust > 0) {
@@ -908,23 +934,24 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/approveRemoveCustomer")
-	public ResponseEntity<?> approveRemoveCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> approveRemoveCustomer(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
 
-		String responsePayload="";
+		String responsePayload = "";
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 		try {
 			String t24Url = env.getProperty("tserver") + customer.getCustomerId() + "/false";
 			String customerId = customer.getCustomerId();
-            log.info("update url for " + t24Url);
+			log.info("update url for " + t24Url);
 
 			String response = HttpRestProccesor.postJson(t24Url, customerId);
 
 			log.info("T24 response: " + response);
-			if(response.equals("failed")){
+			if (response.equals("failed")) {
 				log.error("Accessing the T24 endpoint in approveRemoveCustomer has failed");
 			}
 		} catch (Exception e) {
@@ -960,15 +987,16 @@ public class CustomerController {
 	}
 
 	@PostMapping(value = "/rejectRemoveCustomer")
-	public ResponseEntity<?> rejectRemoveCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
+	public ResponseEntity<?> rejectRemoveCustomer(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
 
-		String responsePayload="";
+		String responsePayload = "";
 
 		List<String> headerList = httpHeaders.getValuesAsList("Key");
 		String key = headerList.get(0);
 
-		String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
-		Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+		String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
+		Customer customer = new Gson().fromJson(decryptedData, Customer.class);
 		try {
 			int cust = customerService.rejectRemoveCustomer(customer.getCustomerId());
 
@@ -984,8 +1012,7 @@ public class CustomerController {
 			GlobalResponse globalResponse = new GlobalResponse(GlobalResponse.APIV, "201", false, "no customers found");
 
 			responsePayload = aeSsecure.encrypt(gson.toJson(globalResponse).toString());
-			return new ResponseEntity<>(responsePayload,
-					HttpStatus.OK);
+			return new ResponseEntity<>(responsePayload, HttpStatus.OK);
 		} catch (Exception e) {
 			GlobalResponse resp = new GlobalResponse("404", "error processing request", false, GlobalResponse.APIV);
 			e.printStackTrace();
@@ -994,15 +1021,17 @@ public class CustomerController {
 			return new ResponseEntity<>(responsePayload, HttpStatus.OK);
 		}
 	}
+
 	@PostMapping(value = "convertStaffToCustomer")
-	public ResponseEntity<?> convertStaffToCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+	public ResponseEntity<?> convertStaffToCustomer(@RequestHeader HttpHeaders httpHeaders,
+			@RequestBody String encCustomer) {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 
 			List<String> headerList = httpHeaders.getValuesAsList("Key");
 			String key = headerList.get(0);
 
-			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
+			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
 			Customer customerRequestBody = objectMapper.readValue(decryptedData, Customer.class);
 			Customer customer = null;
 			int customerUndeleted = 0;
@@ -1014,8 +1043,9 @@ public class CustomerController {
 			}
 			if (customer != null || customerUndeleted > 0) {
 				System.out.println("executing within here");
-				log.info("calling convert staff to customer " );
-				int conversionUpdateReturnValue = this.tellerService.convertStaffToCustomer(customerRequestBody.getCustomerId());
+				log.info("calling convert staff to customer ");
+				int conversionUpdateReturnValue = this.tellerService
+						.convertStaffToCustomer(customerRequestBody.getCustomerId());
 				System.out.println("i have already executed");
 				if (conversionUpdateReturnValue > 0) {
 					Teller teller = tellerService.checkStaffDeleted(customerRequestBody.getCustomerIdNumber());
@@ -1026,9 +1056,8 @@ public class CustomerController {
 									"Conversion of Staff to Customer done successfully", true, GlobalResponse.APIV),
 									HttpStatus.OK);
 						} else {
-							return new ResponseEntity<>(
-									new GlobalResponse("000", "Conversion of Staff to Customer done successfully",
-											true, GlobalResponse.APIV),
+							return new ResponseEntity<>(new GlobalResponse("000",
+									"Conversion of Staff to Customer done successfully", true, GlobalResponse.APIV),
 									HttpStatus.OK);
 						}
 					} else {
@@ -1054,6 +1083,7 @@ public class CustomerController {
 			return new ResponseEntity<>(resp, HttpStatus.OK);
 		}
 	}
+
 	@GetMapping("/getCustomerLogsForExporting")
 	public String getCustomerLogsForExporting(
 			@RequestParam("FromDt") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
@@ -1069,7 +1099,7 @@ public class CustomerController {
 			response += "\n";
 			for (CustomerToDispaly customer : customers) {
 				response += customer.getCustomerName() + ", ";
-				//response += customer.getGender() + ", ";
+				// response += customer.getGender() + ", ";
 				response += customer.getPhoneNumber() + ", ";
 				response += customer.getCustomerIdNumber() + "";
 				response += "\n";

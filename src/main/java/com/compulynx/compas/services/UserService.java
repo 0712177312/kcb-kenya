@@ -82,7 +82,7 @@ public class UserService {
 		return userRepo.approveUsers(id,approvedBy);
 	}
 
-	public int updateUsers(int group, boolean status, Long userId,int updatedBy) {
+	public int updateUsers(int group, boolean status, Long userId,int updatedBy ) {
 		// TODO Auto-generated method stub
 		return userRepo.updateUsers(group, status, userId,updatedBy);
 	}

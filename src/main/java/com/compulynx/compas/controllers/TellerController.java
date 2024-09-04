@@ -426,7 +426,7 @@ public class TellerController {
 			GeneralResponse generalResponse=null;
 			int tellerUndeleted = 0;
 			
-			//START-ADDED BY KENSON -08/05/2024- SELF AUTORISED
+			//START-ADDED BY KENSON -08/05/2024- SELF AUTHORISED
 			 teller.setVerified("A");
 			//END 
 			if (tellerService.checkStaffDeleted(teller.getTellerId()) != null) {
@@ -440,17 +440,17 @@ public class TellerController {
 				int prof = this.customerSvc.upgradeCustomerProfile(teller.getCustomerId());
 				if (prof > 0) {
 					//commented by KENSON
-	//				int userStatusUpdate = userService.updateStatusToTrue(teller.getTellerSignOnName());
-//					if (userStatusUpdate > 0) {
+					int userStatusUpdate = userService.updateStatusToTrue(teller.getTellerSignOnName());
+				if (userStatusUpdate > 0) {
 						return new ResponseEntity<>(
 								new GlobalResponse("000", "customer upgraded successfully", true, GlobalResponse.APIV),
-								HttpStatus.OK);
-//					}
-//					else {
-//						return new ResponseEntity<>(
-//								new GlobalResponse("201", "failed to update user status", false, GlobalResponse.APIV),
-//								HttpStatus.OK);
-//					}
+								HttpStatus.OK);				
+						}
+				else {
+					return new ResponseEntity<>(
+							new GlobalResponse("201", "failed to update user status", false, GlobalResponse.APIV),
+							HttpStatus.OK);
+					}
 				} else {
 					return new ResponseEntity<>(
 							new GlobalResponse("201", "failed to upgrade customer details", false, GlobalResponse.APIV),

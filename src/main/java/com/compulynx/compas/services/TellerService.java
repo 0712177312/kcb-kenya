@@ -181,9 +181,16 @@ public class TellerService {
 		HttpURLConnection connection = null;
 		try {
 		
-			//get access  token 
-			String accessToken = auth2t24TokenService.getAccessToken(env); 
-//			logger.info(accessToken);
+			String accessToken = null;
+			try {
+				accessToken = auth2t24TokenService.getAccessToken(env);
+				logger.info("access -- token :: {}",accessToken);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			logger.info(accessToken);
+			logger.info("Exited the get access token");
 			 if (urlConnection instanceof HttpsURLConnection) {
 		    	   connection = (HttpsURLConnection) urlConnection;
 	            } else if(urlConnection instanceof HttpURLConnection) {
@@ -221,7 +228,7 @@ public class TellerService {
 	        } 
 	        			       
 			int status = connection.getResponseCode();
-			System.out.println("STATUS FROM T24!!!!!!!!!!!!!!"+status);
+			System.out.println("STATUS FROM T24 =>> t24StaffInquiry !!!!!!!!!!!!!! "+status);
 			
 			if(status == 200) {
 				reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));						
