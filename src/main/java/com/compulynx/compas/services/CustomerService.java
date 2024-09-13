@@ -515,5 +515,11 @@ public class CustomerService {
 		return customerRepository.GtConvertedCustomersStaffByBranch(fromDate, toDate, enrolledType, branchCode);
 	}
 
+	public Customer checkCustomerExists(String customerId) {
+		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub
+		return customerRepository.checkCustomerExists(customerId);
+	}
+
 }
 

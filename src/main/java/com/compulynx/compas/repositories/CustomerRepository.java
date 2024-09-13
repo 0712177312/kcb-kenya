@@ -161,7 +161,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 	@Modifying
 	@Transactional
 	//UPDATE BY KENSON --17/04/2024
-	//@Query(nativeQuery = true, value = "update customer set WAIVED='T', verified='AD' WHERE customerId=?1 and verified='A'")
+	// @Query(nativeQuery = true, value = "update customer set WAIVED='T', verified='AD' WHERE customerId=?1 and verified='A'")
 	@Query(nativeQuery = true, value = "update customer set WAIVED='T',enroll_status ='U' WHERE customerId=?1 and verified='A'")
 	int upgradeCustomerDetails(String customerId);
 
@@ -214,4 +214,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 			+ " AND t.CREATED_AT BETWEEN :fromDate AND :toDate AND t.enroll_status=:enrolledType OR c.enroll_status=:enrolledType")
 	List<ConvertedCustomerStaff> GtConvertedCustomersStaff(@Param("fromDate") Date fromDate, @Param("toDate") Date toDate,
             @Param("enrolledType") String enrolledType);
+	@Query("select u from Customer u where u.customerId=?1 and (u.verified='A' or u.verified='N' or u.verified='T' or u.verified='D')")
+	Customer checkCustomerExists(String customerId);
 }

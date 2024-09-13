@@ -12,6 +12,7 @@ import javax.net.ssl.HttpsURLConnection;
 import com.compulynx.compas.customs.responses.GeneralResponse;
 import com.compulynx.compas.customs.responses.GlobalResponse2;
 import com.compulynx.compas.mail.EmailSender;
+import com.compulynx.compas.models.Customer;
 import com.compulynx.compas.models.SysLogs;
 import com.compulynx.compas.models.extras.TellersToApproveDetach;
 import com.compulynx.compas.models.t24Models.Staff;
@@ -206,6 +207,32 @@ public class TellerController {
 			return new ResponseEntity(resp, HttpStatus.OK);
 		}
 	}
+
+	
+	@PostMapping(value = "/checkTellerByCustomerId")
+	public ResponseEntity<?> checkCustomerTellerExists(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encTeller) {
+		try {
+			List<String> headerList = httpHeaders.getValuesAsList("Key");
+			String key = headerList.get(0);
+
+			String decryptedData = aeSsecure.integratedDataDecryption(key,encTeller);
+			Teller teller =  new Gson().fromJson(decryptedData,Teller.class);
+
+			Teller cust = tellerService.checkTellerCustomer(teller.getCustomerId());
+			if (cust != null) {
+				return new ResponseEntity<>(
+						new GlobalResponse("000", "teller already enrolled", true, GlobalResponse.APIV), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(
+						new GlobalResponse(GlobalResponse.APIV, "201", false, "teller not enrolled"), HttpStatus.OK);
+			}
+		} catch (Exception e) {
+			GlobalResponse resp = new GlobalResponse("404", "error processing request", false, GlobalResponse.APIV);
+			e.printStackTrace();
+			return new ResponseEntity<>(resp, HttpStatus.OK);
+		}
+	}
+	
 
 	@PostMapping(value = "/checkTeller")
 	public ResponseEntity<?> checkCustomer(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encTeller) {

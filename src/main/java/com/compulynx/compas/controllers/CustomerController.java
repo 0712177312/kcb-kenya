@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.compulynx.compas.customs.Api;
+import com.compulynx.compas.customs.AppUtilities;
 import com.compulynx.compas.customs.HttpRestProccesor;
 import com.compulynx.compas.customs.responses.CustomerResponse;
 import com.compulynx.compas.customs.responses.GlobalResponse;
@@ -243,7 +244,29 @@ public class CustomerController {
 			return new ResponseEntity<>(resp, HttpStatus.OK);
 		}
 	}
+	@PostMapping(value = "/checkCustomerByCustomerId")
+	public ResponseEntity<?> checkCustomerExists(@RequestHeader HttpHeaders httpHeaders,@RequestBody String encCustomer) {
+		try {
+			List<String> headerList = httpHeaders.getValuesAsList("Key");
+			String key = headerList.get(0);
 
+			String decryptedData = aeSsecure.integratedDataDecryption(key,encCustomer);
+			Customer customer =  new Gson().fromJson(decryptedData,Customer.class);
+
+			Customer cust = customerService.checkCustomerExists(customer.getCustomerId());
+			if (cust != null) {
+				return new ResponseEntity<>(
+						new GlobalResponse("000", "customer already enrolled", true, GlobalResponse.APIV), HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(
+						new GlobalResponse(GlobalResponse.APIV, "201", false, "customer not enrolled"), HttpStatus.OK);
+			}
+		} catch (Exception e) {
+			GlobalResponse resp = new GlobalResponse("404", "error processing request", false, GlobalResponse.APIV);
+			e.printStackTrace();
+			return new ResponseEntity<>(resp, HttpStatus.OK);
+		}
+	}
 	@PostMapping(value = "/obtainCustomerDetails")
 	public ResponseEntity<?> obtainCustomerDetails(@RequestHeader HttpHeaders httpHeaders,
 			@RequestBody String encCustomer) throws NoSuchAlgorithmException, IOException {
@@ -705,8 +728,9 @@ public class CustomerController {
 			String decryptedData = aeSsecure.integratedDataDecryption(key, encCustomer);
 			log.info("decryptedData {}", decryptedData);
 			Customer customer = new Gson().fromJson(decryptedData, Customer.class);
-			int updates = customerService.rejectCustomerEnrollment(customer.getRejectedBy(), customer.getCustomerId(),
-					customer.getReason1());
+			int updates = 
+					customerService.rejectCustomerEnrollment(customer.getRejectedBy(),customer.getCustomerId(),customer.getReason1());
+			System.out.println("updated succesfully 1-true,0-false :: "+updates);
 			if (updates > 0) {
 				return new ResponseEntity<>(
 						new GlobalResponse("000", "Customer rejected successfully", true, GlobalResponse.APIV),
@@ -717,9 +741,12 @@ public class CustomerController {
 						HttpStatus.OK);
 			}
 		} catch (Exception e) {
+			String logMessage = AppUtilities.logPreString() + AppUtilities.ERROR + e.getMessage()
+			+ AppUtilities.STACKTRACE + AppUtilities.getExceptionStacktrace(e);
 			GlobalResponse resp = new GlobalResponse("404",
 					"An Exception occurred while attempting to reject the customer", false, GlobalResponse.APIV);
 			e.printStackTrace();
+			System.out.println(logMessage);
 			return new ResponseEntity<>(resp, HttpStatus.OK);
 		}
 	}

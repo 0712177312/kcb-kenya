@@ -65,6 +65,11 @@ public class TellerService {
 		// TODO Auto-generated method stub
 		return tellerRepository.checkTeller(tellerId);
 	}
+	
+	public Teller checkTellerCustomer(String customerId) {
+		// TODO Auto-generated method stub
+		return tellerRepository.checkTellerCustomer(customerId);
+	}
 
 	public GeneralResponse upTellerDetails(Teller teller) {
 		Optional<Teller> optionalTeller = tellerRepository.findByCustomerId(teller.getCustomerId());
