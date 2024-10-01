@@ -1,0 +1,41 @@
+// In this scss you can overwrite all our scss, we suggested you to add your scss into this, so whenever the update comes it will not affect your code.
+.btn-info{
+    color: #fff !important;
+    background-color: #003d4c !important;
+    border-color: #003d4c !important;
+  }
+  
+  .btn-success {
+    color: #fff !important;
+    background-color: #7cc242 !important;
+    border-color: #7cc242 !important;
+  }
+
+  .fa, .fas, .far, .fal, .fab {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+    color: #003d4c;
+}
+
+.btn-outline-success:hover {
+    color: #fff !important;
+    background-color: #7cc242 !important;
+    border-color: #7cc242 !important;
+}
+.btn-outline-info:hover {
+    color: #fff !important;
+    background-color: #003d4c !important;
+    border-color: #003d4c !important;
+}
+
+.btn-outline-info {
+    color: #ffffff !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #003d4c !important;
+}

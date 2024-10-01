@@ -1,0 +1,16 @@
+{
+    "message": "Success",
+    "payload": {
+        "id": "1290238954",
+        "shortName": "monica m",
+        "phoneNumber": "+254723144188",
+        "country": "KENYA",
+        "legalId": "25836061",
+        "nationality": "KE",
+        "gender": "MALE",
+        "mnemonic": "ID25836061",
+        "accountOfficer": "4001",
+        "email": "test@email.com"
+    },
+    "requestStatus": true
+}
